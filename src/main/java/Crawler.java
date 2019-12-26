@@ -61,7 +61,9 @@ class Crawler {
 	try {
 		Document document = Jsoup.connect(letter).userAgent(USER_AGENT).get();
 		Set<String> set = new HashSet<>();
+		int s = 0;//TODO для тестового запуска можно и 1у итерацию
 		do {
+			s++;
 			set.addAll(document.select(".list.paginate")
 							   .select("a")
 							   .not(".paginate-more")
@@ -74,7 +76,7 @@ class Crawler {
 					.last()
 					.attr("href");
 			document = Jsoup.connect(ref).userAgent(USER_AGENT).get();
-		} while (document.select(".paginate-more").size() != 0);
+		} while (document.select(".paginate-more").size() != 0 && s == 0);
 		System.out.println(set);
 
 		set.parallelStream().forEach(ref -> {
