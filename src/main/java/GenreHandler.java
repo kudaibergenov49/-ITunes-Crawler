@@ -39,19 +39,26 @@ public class GenreHandler implements Callable<List<String>> {
     private List<String> getLetterData(String letter) {
         System.out.println("alpha");
         List<String> letterData = new LinkedList<>();
+        List<Document> pages = new LinkedList<>();
         try {
             Document currentPage = Jsoup.connect(letter).get();
+            pages.add(currentPage);
             while (currentPage.select(".paginate-more").size() > 0) {
-                ExecutorService service = Executors.newSingleThreadExecutor();
-                Callable task = new PageHandler(currentPage);
+                currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href")).get();
+                pages.add(currentPage);
+            }
+
+            pages.forEach(page -> {
+                ExecutorService service = Executors.newFixedThreadPool(2);
+                Callable task = new PageHandler(page);
                 Future<List<String>> f = service.submit(task);
                 try {
                     letterData.addAll(f.get());
                 } catch (InterruptedException | ExecutionException e) {
                     System.out.println("error");
                 }
-                currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href")).get();
-            }
+                service.shutdown();
+            });
         } catch (IOException e) {
             System.out.println(Crawler.ERROR);
         }

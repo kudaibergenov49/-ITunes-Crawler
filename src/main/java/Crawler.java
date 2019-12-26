@@ -27,7 +27,7 @@ class Crawler {
                     .parallel()
                     .map(element -> element.attr("href"))
                     .forEach(genre -> {
-                        ExecutorService service = Executors.newSingleThreadExecutor();
+                        ExecutorService service = Executors.newFixedThreadPool(2);
                         Callable task = new GenreHandler(genre);
                         Future<List<String>> f = service.submit(task);
                         try {
@@ -35,6 +35,7 @@ class Crawler {
                         } catch (InterruptedException | ExecutionException e) {
                             System.out.println("error");
                         }
+                        service.shutdown();
                     });
         } catch (IOException e) {
             System.out.println(ERROR);
