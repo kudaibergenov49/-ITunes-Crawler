@@ -25,6 +25,7 @@ class Crawler {
                     .get()
                     .select(".top-level-genre")
                     .parallelStream()
+                    .limit(3)//TODO для тестового запуска
                     .map(element -> element.attr("href"))
                     .forEach(genre -> data.addAll(getGenreData(genre)));
         } catch (IOException e) {
@@ -42,7 +43,8 @@ class Crawler {
                     .userAgent(Crawler.USER_AGENT)
                     .get()
                     .select("[title=\"Browse More Books\"]")
-                    .stream()
+                    .parallelStream()
+                    .limit(3)//TODO для тестового запуска
                     .map(element -> element.attr("href"))
                     .forEach(letter -> genreData.addAll(getLetterData(letter)));
         } catch (IOException e) {
@@ -55,9 +57,10 @@ class Crawler {
     private ArrayList<String> getLetterData(String letter) {
         System.out.println("letter");
         ArrayList<String> letterData = new ArrayList<>();
+        int max = 3;//TODO для тестового запуска
         try {
             Document currentPage = Jsoup.connect(letter).get();
-            while (currentPage.select(".paginate-more").size() > 0) {
+            while (currentPage.select(".paginate-more").size() > 0  && max > 0) {
                 letterData.addAll(getPageData(currentPage));
                 currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href")).get();
             }
@@ -74,7 +77,7 @@ class Crawler {
         ArrayList<String> pageData = new ArrayList<>();
         page.select("#selectedcontent")
                 .select("a")
-                .stream()
+                .parallelStream()
                 .map(element -> element.attr("href"))
                 .forEach(ref -> {
                     try {
