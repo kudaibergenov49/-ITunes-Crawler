@@ -56,21 +56,40 @@ class Crawler {
     /** Данные жанра побуквенно*/
     private ArrayList<String> getLetterData(String letter) {
         System.out.println("letter");
-        ArrayList<String> letterData = new ArrayList<>();
-        int max = 3;//TODO для тестового запуска
-        try {
-            Document currentPage = Jsoup.connect(letter).userAgent(USER_AGENT).get();
-            while (currentPage.select(".paginate-more").size() > 0  && max > 0) {
-                letterData.addAll(getPageData(currentPage));
-                currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href"))
-				    .userAgent(USER_AGENT)
-				    .get();
-            }
-        } catch (IOException e) {
-            System.out.println(Crawler.ERROR);
-        }
+	ArrayList<String> letterData = new ArrayList<>();
 
-        return letterData;
+	try {
+		Document document = Jsoup.connect(letter).userAgent(USER_AGENT).get();
+		Set<String> set = new HashSet<>();
+		do {
+			set.addAll(document.select(".list.paginate")
+							   .select("a")
+							   .not(".paginate-more")
+							   .stream()
+							   .map(element -> element.attr("href"))
+							   .collect(Collectors.toSet()));
+			String ref = document.select(".list.paginate")
+					.select("a")
+					.not(".paginate-more")
+					.last()
+					.attr("href");
+			document = Jsoup.connect(ref).userAgent(USER_AGENT).get();
+		} while (document.select(".paginate-more").size() != 0);
+		System.out.println(set);
+
+		set.parallelStream().forEach(ref -> {
+			try {
+				letterData.addAll(getPageData(Jsoup.connect(ref).userAgent(USER_AGENT).get()));
+			} catch (IOException e) {
+				System.out.println(ERROR);
+			}
+		});
+
+	} catch (IOException e) {
+		System.out.println(ERROR);
+	}
+
+	return letterData;
     }
 
     /** Данные одной страницы приложении*/
