@@ -22,14 +22,13 @@ class DBConnector {
 
     void save(List<String> applications) {
         try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-             PreparedStatement statement = connection.prepareStatement("insert into Application (?)")) {
+             PreparedStatement statement = connection.prepareStatement("insert into Application (description) values (?)")) {
             connection.setAutoCommit(false);
             int size = 0;
             for (String application : applications) {
                 size++;
                 statement.setString(1, application);
                 statement.addBatch();
-
                 if (size % MAX_BATCH_SIZE == 0) {
                     statement.executeBatch();
                 }

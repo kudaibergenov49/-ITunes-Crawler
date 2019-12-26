@@ -71,14 +71,14 @@ class Crawler {
     /** Данные одной страницы приложении*/
     private ArrayList<String> getPageData(Document page) {
         System.out.println("page");
-        ArrayList<String> letterData = new ArrayList<>();
+        ArrayList<String> pageData = new ArrayList<>();
         page.select("#selectedcontent")
                 .select("a")
                 .stream()
                 .map(element -> element.attr("href"))
                 .forEach(ref -> {
                     try {
-                        letterData.add(Jsoup.connect(APPLICATION_DATA_PREFIX
+                        pageData.add(Jsoup.connect(APPLICATION_DATA_PREFIX
                                 + ref.substring(ref.lastIndexOf("d") + 1))
                                 .userAgent(Crawler.USER_AGENT)
                                 .get()
@@ -89,9 +89,9 @@ class Crawler {
                                 .map(Node::toString)
                                 .orElse(Crawler.ERROR));
                     } catch (IOException e) {
-                        letterData.add(Crawler.ERROR);
+                        pageData.add(Crawler.ERROR);
                     }
                 });
-        return letterData;
+        return pageData;
     }
 }
