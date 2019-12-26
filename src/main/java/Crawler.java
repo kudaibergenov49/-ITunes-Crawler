@@ -40,7 +40,7 @@ class Crawler {
         ArrayList<String> genreData = new ArrayList<>();
         try {
             Jsoup.connect(genre)
-                    .userAgent(Crawler.USER_AGENT)
+                    .userAgent(USER_AGENT)
                     .get()
                     .select("[title=\"Browse More Books\"]")
                     .parallelStream()
@@ -48,7 +48,7 @@ class Crawler {
                     .map(element -> element.attr("href"))
                     .forEach(letter -> genreData.addAll(getLetterData(letter)));
         } catch (IOException e) {
-            System.out.println(Crawler.ERROR);
+            System.out.println(ERROR);
         }
         return genreData;
     }
@@ -59,10 +59,12 @@ class Crawler {
         ArrayList<String> letterData = new ArrayList<>();
         int max = 3;//TODO для тестового запуска
         try {
-            Document currentPage = Jsoup.connect(letter).get();
+            Document currentPage = Jsoup.connect(letter).userAgent(USER_AGENT).get();
             while (currentPage.select(".paginate-more").size() > 0  && max > 0) {
                 letterData.addAll(getPageData(currentPage));
-                currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href")).get();
+                currentPage = Jsoup.connect(currentPage.select(".paginate-more").attr("href"))
+				    .userAgent(USER_AGENT)
+				    .get();
             }
         } catch (IOException e) {
             System.out.println(Crawler.ERROR);
@@ -83,16 +85,16 @@ class Crawler {
                     try {
                         pageData.add(Jsoup.connect(APPLICATION_DATA_PREFIX
                                 + ref.substring(ref.lastIndexOf("d") + 1))
-                                .userAgent(Crawler.USER_AGENT)
+                                .userAgent(USER_AGENT)
                                 .get()
                                 .body()
                                 .childNodes()
                                 .stream()
                                 .findFirst()
                                 .map(Node::toString)
-                                .orElse(Crawler.ERROR));
+                                .orElse(ERROR));
                     } catch (IOException e) {
-                        pageData.add(Crawler.ERROR);
+                        pageData.add(ERROR);
                     }
                 });
         return pageData;
